@@ -1,0 +1,11 @@
+# Common File to be use in All env
+application:
+  name: "priceharm-papi"
+milestone:
+  category: "LOG"
+
+#logging
+source: "iewc-priceharm"
+target: "iewc-sapi"
+requestMessage: "Received request from EAPI"
+responseMessage: "Response Received from SAPI"

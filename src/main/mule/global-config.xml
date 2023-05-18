@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:cofww-logger="http://www.mulesoft.org/schema/mule/cofww-logger"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/cofww-logger http://www.mulesoft.org/schema/mule/cofww-logger/current/mule-cofww-logger.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+   
+	<!-- This configuration uses default algorithm (AES) and mode (CBC) -->
+	<apikit:config name="sap-priceharm-papi-config" api="sap-priceharm-papi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	<configuration-properties
+		doc:name="Application Configuration properties"
+		doc:id="4e9071c0-5800-46f3-8031-b1ae639c2256"
+		file="config/config-${mule.env}.yaml" />
+   
+
+	<configuration-properties
+		doc:name="Common Configuration properties"
+		doc:id="8f0a30ee-8023-4aa2-91a3-c8ab1f805c27"
+		file="config/config-common.yaml" />
+
+	<global-property doc:name="default mule.env"
+		doc:id="fe3c60da-e4a7-4f63-b47b-6f30a7b8bc93" name="mule.env"
+		value="local" />
+
+	<http:listener-config name="Http-Listener-config-papi">
+        <http:listener-connection host="${http.listener.host}" port="${http.listener.port}" readTimeout="${http.listener.timeout}"/>
+    </http:listener-config>
+    <http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="7da5bf14-d24b-4301-a497-e2b92c4e550e" responseTimeout="${http.request.timeout}">
+		<http:request-connection host="${http.request.host}" port="${http.request.port}" connectionIdleTimeout="500000">
+			<http:authentication >
+				<http:basic-authentication username="username" password="password" />
+			</http:authentication>
+		</http:request-connection>
+	</http:request-config>
+	<import doc:name="Import" doc:id="11d349db-7241-432f-8d40-154a4bf97917" file="error-handler.xml" />
+	<import doc:name="Import" doc:id="6a4ee77c-d3ea-4d1f-a979-a12a00e52acc" file="mule-common-logging.xml" />
+	<import doc:name="Import" doc:id="e2a77910-1e5f-4d31-9d7c-c48b9d971d2e" file="common-global.xml" />
+
+
+</mule>

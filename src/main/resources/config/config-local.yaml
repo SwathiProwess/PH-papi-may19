@@ -1,0 +1,12 @@
+
+http:
+ listener:
+  host: "0.0.0.0"
+  port: "8085"
+  timeout: "30000"
+ request:
+  host: "0.0.0.0"
+  port: "8087"
+  timeout: "30000"
+  path: "/api/price_harm"
+  

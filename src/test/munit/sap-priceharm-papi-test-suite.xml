@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="sap-priceharm-papi-test-suite.xml" />
+	<munit:test name="sap-priceharm-papi-mainTest" doc:id="94c981ac-c071-4df5-b064-3e9a0bb117ee" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitRouter" doc:id="c421ab25-42e1-4162-8c2c-2a49dc028132" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="68f976dd-b6cf-4887-b3d5-7573546ac0e5" >
+				<munit:variables >
+					<munit:variable key="httpMethod" value='"POST"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-main" doc:id="e0424ea3-085a-48b1-b669-20152f678ceb" name="sap-priceharm-papi-main"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="sap-priceharm-papi-consoleTest" doc:id="f79928ab-1d6d-4068-b084-d9f23956c7b1" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitConsole" doc:id="3a52f260-f814-4c7b-871c-cbda2f8f9215" processor="apikit:console">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-console" doc:id="d92aa916-68f3-4c38-ba6d-c550480f892c" name="sap-priceharm-papi-console"/>
+		</munit:execution>
+	</munit:test>
+	<munit:test name="sap-priceharm-papi-test-suite-post:\price_harm:application\json:sap-priceharm-papi-configTest" doc:id="df602642-dfdd-4942-a607-fbdd5f9f355d" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="httpRequest" doc:id="78374ec1-168d-437e-850e-67b8b728ec6c" processor="http:request">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="c7440cfa-a7eb-4377-9bb7-4d3058b9379f" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/xml  --- readUrl('classpath://MunitFiles/sapiResponse.dwl')]" mediaType="application/xml" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="27e8eea8-89f8-4c64-aabd-e4b341255867" >
+				<munit:payload value="#[output application/json  --- readUrl('classpath://MunitFiles/request.dwl')]" mediaType="application/json" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\price_harm:application\json:sap-priceharm-papi-config" doc:id="5e9a69f1-a72a-4df8-8446-b364506ca9b7" name="post:\price_harm:application\json:sap-priceharm-papi-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="b4b57e70-4dd9-4e97-aeb0-f967de4dc198" is="#[MunitTools::equalTo(readUrl('classpath://MunitFiles/response.dwl'))]" expression="#[payload]" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="APIKIT:UNSUPPORTED_MEDIA_TYPE" doc:id="8369512d-7302-45ac-9f1d-3f868ca5a66b" description="Test" expectedErrorType="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitRouter" doc:id="cc958465-3c7a-430d-ab59-728c168c9e80" processor="apikit:router" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:UNSUPPORTED_MEDIA_TYPE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="fbbf48a1-d93b-458c-be8c-ebdddd3d73fa" >
+				<munit:variables >
+					<munit:variable key="httpMethod" value='"POST"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-main" doc:id="92f9b9e9-86aa-42b8-a82a-39f674233d06" name="sap-priceharm-papi-main" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="c528512b-fe22-4cc5-be66-eba59e58859c" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://MunitFiles/unsupportedMediaType.dwl'))]" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="APIKIT:NOT_IMPLEMENTED" doc:id="0511c3ed-efaa-47f3-ad2b-8f5608c07dc8" description="Test" expectedErrorType="APIKIT:NOT_IMPLEMENTED" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitRouter" doc:id="6d6bb71a-1a83-4fa1-a345-8781aa57540c" processor="apikit:router" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_IMPLEMENTED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="e2624dce-dd26-48c4-86a3-a3586ab16761" >
+				<munit:variables >
+					<munit:variable key="httpMethod" value='"POST"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-main" doc:id="91520c11-f324-4cbb-993f-85a4314bac46" name="sap-priceharm-papi-main" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="c3c7184c-d2af-4db0-89ca-a890be8b326a" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://MunitFiles/notImplemented.dwl'))]" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="APIKIT:NOT_ACCEPTABLE" doc:id="0bd6d648-4f2b-4f9a-892e-b22950005749" description="Test" expectedErrorType="APIKIT:NOT_ACCEPTABLE" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitRouter" doc:id="8b291ccb-5a97-4a32-88b5-ae16b96c5997" processor="apikit:router" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_ACCEPTABLE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="6903c76c-0568-4cd5-9e10-81ce28a3d269" >
+				<munit:variables >
+					<munit:variable key="httpMethod" value='"POST"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-main" doc:id="60e5f17b-b1b6-4fe6-9be1-b998b4d903f3" name="sap-priceharm-papi-main" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="7e3539dc-2ed2-434b-8823-2f650a008307" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://MunitFiles/notAcceptable.dwl'))]" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="APIKIT:BAD_REQUEST" doc:id="01d09afe-cbba-4258-8b49-6798d1da2a10" description="Test" expectedErrorType="APIKIT:BAD_REQUEST" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitRouter" doc:id="482c2dea-9ff1-4225-8588-a4309b58ff6b" processor="apikit:router" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:BAD_REQUEST" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="75ba3c06-e3d3-4139-9269-3ad208a8a331" >
+				<munit:variables >
+					<munit:variable key="httpMethod" value='"POST"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-main" doc:id="2317bc22-3db3-4b43-81ff-8c2b5b0e02db" name="sap-priceharm-papi-main" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="09c8bd83-7c40-4237-ae24-88a023d2c381" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://MunitFiles/badRequest.dwl'))]" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="APIKIT:NOT_FOUND" doc:id="92ab58ff-3e6c-4c9b-a3bb-17db1244a960" description="Test" expectedErrorType="APIKIT:NOT_FOUND" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitRouter" doc:id="a85e3c58-2125-4cd3-a623-55efacb96134" processor="apikit:router" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_FOUND" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="4690c94a-4cb1-4344-bdd7-ea6f69f49e31" >
+				<munit:variables >
+					<munit:variable key="httpMethod" value='"POST"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-main" doc:id="edd38685-1861-4c12-9168-44e68a6f6a6f" name="sap-priceharm-papi-main" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="3433c843-4924-446c-8035-f83d4304f64d" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://MunitFiles/notFound.dwl'))]" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="SAP:CONNECTIVITY" doc:id="e38860fd-c7c5-49cb-b53e-260444641dc6" description="Test" expectedErrorType="SAP:CONNECTIVITY" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitRouter" doc:id="b9ed35d6-4425-4333-85a5-f1d9d8d642e7" processor="apikit:router" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="SAP:CONNECTIVITY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="b5abc35a-30d0-4b76-9848-ea023ac24598" >
+				<munit:variables >
+					<munit:variable key="httpMethod" value='"POST"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-main" doc:id="03eb291a-f97e-4fc6-bedb-6418f9d865a8" name="sap-priceharm-papi-main" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="b1b8ef89-4a5c-49ee-8cc3-339de5be289c" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://MunitFiles/sapConnectivity.dwl'))]" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="SAP:INVALID_INPUT" doc:id="c7497ce6-c5ed-4e08-9d55-a5a67a28a693" description="Test" expectedErrorType="SAP:INVALID_INPUT" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitRouter" doc:id="675087d9-8773-495c-b689-f61e967cec90" processor="apikit:router" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="SAP:INVALID_INPUT" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="bb0a64f3-c5b7-4315-ba80-72756a527144" >
+				<munit:variables >
+					<munit:variable key="httpMethod" value='"POST"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-main" doc:id="1284ac34-6624-44e8-b77c-632f4277dc83" name="sap-priceharm-papi-main" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="12bb826a-b47b-481f-95c4-fb91a5e06e02" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://MunitFiles/sapInvalidInput.dwl'))]" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="HTTP:CONNECTIVITY" doc:id="d2ad3484-4126-468e-b8cc-fc0b6e17c3c7" description="Test" expectedErrorType="HTTP:CONNECTIVITY" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitRouter" doc:id="59163b5c-23e8-4327-a074-69504ec79045" processor="apikit:router" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="HTTP:CONNECTIVITY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="96830cf2-1db5-40d9-82df-76ee2bb13dea" >
+				<munit:variables >
+					<munit:variable key="httpMethod" value='"POST"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-main" doc:id="c93546e3-ea5f-4e0e-8a19-813023baebf7" name="sap-priceharm-papi-main" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="8924dcf1-396d-40f0-8ce2-04d7d2bb5645" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://MunitFiles/httpConnectivity.dwl'))]" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="SAP:INVALID_CACHE" doc:id="55c5ec68-a4f4-4b5d-b44d-bb23abdc7871" description="Test" expectedErrorType="SAP:INVALID_CACHE" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitRouter" doc:id="4659ef6b-8930-4aad-a40c-7151da6ecc15" processor="apikit:router" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="SAP:INVALID_CACHE" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="146cfe1e-eb20-4a93-940f-4f8b2765392d" >
+				<munit:variables >
+					<munit:variable key="httpMethod" value='"POST"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-main" doc:id="09259c41-0266-4f65-a946-53f91e5b972f" name="sap-priceharm-papi-main" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="fb16ee3e-ab37-4fab-8a7e-b5e5a6ff6dc3" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://MunitFiles/sapInvalidCache.dwl'))]" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="APIKIT:METHOD_NOT_ALLOWED" doc:id="18ebebc6-c785-442d-abee-8d3baa87d138" description="Test" expectedErrorType="APIKIT:METHOD_NOT_ALLOWED" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="apiKitRouter" doc:id="4a9d6e53-c3bf-4c81-b535-64daf8d9117f" processor="apikit:router" >
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="sap-priceharm-papi-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:METHOD_NOT_ALLOWED" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="c2d9726d-8718-4366-984e-6abac18b1a01" >
+				<munit:variables >
+					<munit:variable key="httpMethod" value='"POST"' />
+				</munit:variables>
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to sap-priceharm-papi-main" doc:id="281566a0-4695-476a-8348-aceca05ef2f5" name="sap-priceharm-papi-main" />
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="4962e12f-7e92-439e-a84a-0a5b05337d73" expression="#[payload]" is="#[MunitTools::equalTo(readUrl('classpath://MunitFiles/methodNotAllowed.dwl'))]" />
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

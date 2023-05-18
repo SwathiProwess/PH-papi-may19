@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="ImplementationFlow" doc:id="1f3ff2cf-cab6-4a86-8ab6-9f4dbf05a89b" >
+		<ee:transform doc:name="setInputPayloadVariable" doc:id="bb0cceef-ff78-4374-aba0-02bf0a11f684" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="inputPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    correlationId : vars.correlationId,
+    eventTimestamp : now(),
+    businessProcessName: app.name,
+    flowName: flow.name,   
+    source: p('source'), 
+    target: p('target'), 
+    httpMethod: vars.httpMethod, 
+    message:p('requestMessage'),
+    businessObject:[] 
+
+}
+]]></ee:set-variable>
+				<ee:set-variable variableName="functionModule" ><![CDATA['ZFM_CALC_ZILL_TARGET_WRAP']]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logRequestReceived" doc:id="5d305ef4-b94f-4eef-a98f-e3c82a027cfb" name="mile-log:request-received" />
+		<ee:transform doc:name="transformJsonRequestToXml" doc:id="604a9af0-920b-4fa8-85c4-d3c83adde08a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Strings
+output application/xml
+---
+{
+"ZFM_CALC_ZILL_TARGET_WRAP":{
+"import":{
+"I_KUNNR":{
+"KUNNR":leftPad(payload.kunnr.customerNumber,10,0)
+},
+"I_MATERIALS": {
+"row":payload.searchparams map {
+"MATNR": if($.material contains(/[A-Za-z]/))($.material) else (leftPad($.material,18,0))
+}
+}
+}
+}
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="callToSapi" doc:id="c7440cfa-a7eb-4377-9bb7-4d3058b9379f" config-ref="HTTP_Request_configuration" path="${http.request.path}" sendCorrelationId="ALWAYS" >
+			<http:headers ><![CDATA[#[output application/json
+---
+{
+	"functionModule" : vars.functionModule,
+	"sourceName": app.name
+}]]]></http:headers>
+		</http:request>
+		<ee:transform doc:name="transformXmlResponseToJson" doc:id="27cdc1b4-40bf-4d40-93f4-d8fdd28198a2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var data= sizeOf(payload.ZFM_CALC_ZILL_TARGET_WRAP.export.E_RESULTS.*row)
+---
+{
+    results: payload.ZFM_CALC_ZILL_TARGET_WRAP.export.E_RESULTS.*row map {
+        iewC_MATERIAL: $.IEWC_MATERIAL,
+        peR_AMT: $.PER_AMT,
+        peR_UOM: $.PER_UOM,
+        orderCurrency: $.CURRENCY,
+        taR_QTY_START: $.TAR_QTY_START,
+        taR_QTY_END: $.TAR_QTY_END,
+        taR_AMT: $.TAR_AMT
+    },
+     messages: [
+        {
+      "type": "Info",
+      message: data ++ " results found"
+    }
+    ],
+    success: true
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="inputPayload" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    correlationId : vars.correlationId,
+    eventTimestamp : now(),
+    businessProcessName: app.name,
+    flowName: flow.name,   
+    source: p('source'), 
+    target: p('target'), 
+    httpMethod: vars.httpMethod, 
+    message:p('requestMessage'),
+    businessObject:[]  
+
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="logResponseSent" doc:id="b331346d-bfb4-47e6-8874-063ffc98cf34" name="mile-log:request-sent" />
+	</flow>
+</mule>
